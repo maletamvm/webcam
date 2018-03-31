@@ -1,397 +1,220 @@
-import cv
-import random
-import math
+import numpy as np
+import cv2
 from PIL import Image, ImageDraw 
 
+
+
 def takePhoto():
-	capture = cv.CaptureFromCAM(0)
-	frame = cv.QueryFrame(capture)
-	cv.SaveImage("capture.jpg", frame)
+    cap = cv2.VideoCapture(1)
 
+    while(True):
+        # Capture frame-by-frame
+        ret, frame = cap.read()
 
+        # Our operations on the frame come here
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        # Display the resulting frame
+        cv2.imshow('frame',gray)
+        if cv2.waitKey(1) & 0xFF == ord('e'):
+            cv2.imwrite('capture.jpg',gray)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    # When everything done, release the capture
+    cap.release()
+    cv2.destroyAllWindows()
 
 def editPhoto():
-	image = Image.open("cam.jpg")  
-	draw = ImageDraw.Draw(image)
-	width = image.size[0]
-	height = image.size[1]
-	pix = image.load()
-	imageMatrix= [[0] * height for i in range(width)]
-	factor =50
-	for i in range(width):
+    image = Image.open("capture.jpg")  
+    width = image.size[0] 
+    height = image.size[1] 
+    pix = image.load()
+    
+    min_height=int(height-(height/2+height*0.05))
+    height=int(height/2+height*0.05)
+    min_width=int(width-(width/2+width*0.05))
+    width=int(width/2+width*0.05)
+    #print ( width , height)
 
-		for j in range(height):
-			a = pix[i, j][0]
-			b = pix[i, j][1]
-			c = pix[i, j][2]
-			S = a + b + c
-			if (S > (((255 + factor) / 2) * 3)):
-				imageMatrix[i][j]=1
-				a, b, c = 255, 255, 255
-			else:
-				imageMatrix[i][j]=0
-				a, b, c = 0, 0, 0
-			draw.point((i, j), (a, b, c))
-	image.save("ans.jpg", "JPEG")
-	del draw
-	return imageMatrix
+    new_image=Image.new('L',(width,height))
+    draw = ImageDraw.Draw(new_image)
+    
+    
+    imageMatrix= [[0] * height for i in range(width)]
+    mat=[[0] * height for i in range(width)]
+    factor =110
+    for i in range(min_width,width+min_width-1):
 
+        for j in range(int(height)):
+            a = pix[i,j]
+            if (factor >a):
+                imageMatrix[i-min_width][j]=1
+                a=255
+            else:
+                imageMatrix[i-min_width][j]=0
+                a=0
+            draw.point((i-min_width, j), a)
+    new_image.save("ans.jpg", "JPEG")
+    del draw
+    f = open('out.txt', 'wt')
 
+    for i in range(1,width):
+            for j in range(1,height):
+                if imageMatrix[i][j]+imageMatrix[i][j-1]==1 or imageMatrix[i][j]+imageMatrix[i-1][j]==1  :
+                    mat[i][j]=1
+                    f.write('*')
+                else:
+                    mat[i][j]=0
+                    f.write(' ')
+            f.write('\n')
+    f.flush()
+    f.close()
+    return mat
 
-def findLeftTop(mat):
-	width=len(mat)
-	height=len(mat[1])
-	for i in range(height):
-		for j in range(width):
-			if mat[j][i]==1:
-				if j+100<width:
-					if mat[j+100][i]==1:
-						if i+100<height:
-							if mat[j][i+100]==1:
-								if j-5>0:
-									if mat[j-5][i+5]==1:
-										next
-									else:
-										image = Image.open("ans.jpg")  
-										draw = ImageDraw.Draw(image)
-										for b in range(15):
-											draw.point((j+b,i+b),(0,0,0))
-										image.save("ans.jpg", "JPEG")
-										del draw
-										return j,i
-def findRightTop(mat):
-	width=len(mat)
-	height=len(mat[1])
-	for i in range(height):
-		for j in range(width):
-			if mat[width-j-1][i]==1:
-				if width-j-51<width:
-					if mat[width- j-51][i]==1:
-						if i+50<height:
-							if mat[width- j-1][i+50]==1:
-								if j+5<width:
-									if mat[width-j+4][i+5]==1:
-										next 
-									else:
-										image = Image.open("ans.jpg")  
-										draw = ImageDraw.Draw(image)
-										for b in range(15):
-											draw.point((width-j-b,i+b),(0,0,0))
-										image.save("ans.jpg", "JPEG")
-										del draw
-										return width- j,i
-def findBottomLeft(mat):
-	width=len(mat)
-	height=len(mat[1])
-	for i in range(height):
-		for j in range(width):
-			if mat[j][height-1-i]==1:
-				if j+50<width:
-					if mat[j+50][height-1- i]==1:
-						if height-i-51> 0:
-							if mat[j][height-i- 51]==1:
-								if j-5>0:
-									if mat[j-5][height-i-5]==1:
-										next
-									else:
-										image = Image.open("ans.jpg")  
-										draw = ImageDraw.Draw(image)
-										for b in range(15):
-											draw.point((j+b,height- i-b),(0,0,0))
-										image.save("ans.jpg", "JPEG")
-										del draw
-										return j,height- i
-
-
-def findBottomRight(mat):
-	width=len(mat)
-	height=len(mat[1])
-	for i in range(height):
-		for j in range(width):
-			if mat[width -j-1][height -1-i]==1 :
-				if height -i -51>0:
-					if mat[width-j-1][height-i-51]==1:
-						if width- j-51>0:
-							if mat[width -j-51][height-1-i]==1:
-								if height-i+5<height:
-									if width- j+5<width:
-										if mat[width- j+5][height-i+5]==1:
-											next
-										else:
-											image = Image.open("ans.jpg")  
-											draw = ImageDraw.Draw(image)
-											for b in range(15):
-												draw.point((width- j-b,height- i-b),(0,0,0))
-											image.save("ans.jpg", "JPEG")
-											del draw
-											return width- j,height- i
-
-def readPoint(tli,tlj,tri,trj,bli,blj,bri,brj):
-	lt=tri-tli
-	ll=blj-tlj
-	lb=bri-bli
-	lr=brj-trj
-	if math.fabs(lt - lb)>20:
-		ideallentop=ll/1.41
-		if math.fabs(lt- ideallentop)>30:
-			if math.fabs(tli-bli)>20:
-				return 1,bli
-			else:
-				return 2,bri
-
-		else:
-			if math.fabs(tri-bri)>20:
-				print ('hdhd')
-				return 3, tri
-			else:
-				return 4 , tli
-	elif math.fabs(ll-lr)>20:
-		ideallenbot=lt*1.41
-		if math.fabs(ll- ideallenbot)>30:
-			if math.fabs(tlj-trj)>20:
-				return 5,trj
-			else:
-				return 8,brj
-
-		else:
-			if math.fabs(tlj-trj)>20:
-				return 6, tlj
-			else:
-				return 7 , blj
-	else:
-		return 0,0
-
-
-def printMat(mat):
-	for i in range(len(mat)): 
-		print(mat[i])
-
-
-def cutPhoto(mat,st,sl,sb,sr):
-	i=sb-st
-	j=sr-sl
-	print(len(mat))
-	print(len(mat[0]))
-	print i
-	print j
-	image = Image.open("cam.jpg")  
-	draw = ImageDraw.Draw(image)
-											
-											
-	page= [[0] * i for it in range(j)]
-	for a in range(j):
-		for b in range(i):
-			page[a][b]=mat[a+sl][b+st]
-
-	for a in range(j):
-		for b in range(10):
-			page[a][b]=1
-			page[a][i-b-1]=1
-	for a in range(i):
-		for b in range(10):
-			page[b][a]=1
-			page[j-b-1][a]=1
-	for a in range(j):
-		for b in range(i):
-			if(page[a][b]==1):
-				draw.point((a,b),(255,255,255))
-			else:
-				draw.point((a,b),(0,0,0))
-
-
-	image.save("capt.jpg", "JPEG")
-	del draw
-
-	return page
-
-
-def findLine(page):
-	maxW=0
-	maxH=0
-	for i in range(len(page[0])) :
-		count=0
-		for j in range(len(page)) :
-			if page[j][i]==0:
-				count+=1
-				next
-			else:
-				if maxW<count:
-					maxW=count
-					break
-	for i in range(len(page)):
-		count=0
-		for j in range(len(page[0])):
-			if page[i][j]==0:
-				count+=1
-				next
-			else:
-				if maxH<count:
-					maxH=count
-					break
-		
-	print('maxH:'+str(maxH)+'  maxW'+str(maxW))
-	if maxW>maxH:
-		return 1,maxW
-	else:
-		return 2,maxH
-
-def findTriangle(page):
-	maxW=0
-	maxH=0
-	startfloat=0
-	startW=0
-	row=0
-	endW=0
-	startH=0
-	endH=0
-	column=0
-	for i in range(len(page[0])) :
-		count=0
-		for j in range(len(page)) :
-			if page[j][i]==0:
-				if count==0:
-					startfloat=j
-				count+=1
-				next
-			else:
-				if maxW<count:
-					row=i
-					startW=startfloat
-					endW=j
-					maxW=count
-					break
-	for i in range(len(page)):
-		count=0
-		for j in range(len(page[0])):
-			if page[i][j]==0:
-				if count==0:
-					startfloat=j
-				count+=1
-				next
-			else:
-				if maxH<count:
-					column=i
-					startH=startfloat
-					endH=j
-					maxH=count
-					break
-		
-	print('maxH:'+str(maxH)+'  maxW'+str(maxW))
-	if maxW>maxH:
-		midle=startW+((endW- startW)/2)
-		print('start :'+str(startW)+'  end  :'+str(endW)+'  row:'+str(row))
-		print('midle:'+str(midle))
-		
-		heightTriangle=5
-		image = Image.open("capt.jpg")  
-		draw = ImageDraw.Draw(image)
-		height=len(page[0])
-		for i in range(len(page)):
-			draw.point((i,row),(0,0,0))
-		for i in range(row):
-			draw.point((midle,row-i),(0,0,0))
-			heightTriangle+=1
-			if page[midle+1][row-i-5]==0 and page[midle-1][row-i-5]==0 :
-				break
-
-		image.save("capt.jpg", "JPEG")
-		del draw
-		print('heightTriangle:'+str(heightTriangle))
-		return 1,heightTriangle,endW-startW
-
-
-	else:
-		midle=startH+((endH- startH)/2)
-		print('start :'+str(startH)+'  end  :'+str(endH)+'  row:'+str(column))
-		print('midle:'+str(midle))
-		
-		heightTriangle=5
-		image = Image.open("capt.jpg")  
-		draw = ImageDraw.Draw(image)
-		height=len(page[0])
-		for i in range(len(page)):
-			draw.point((i,row),(0,0,0))
-		for i in range(row):
-			draw.point((midle,row-i),(0,0,0))
-			heightTriangle+=1
-			if page[midle+1][row-i-5]==0 and page[midle-1][row-i-5]==0 :
-				break
-
-		image.save("capt.jpg", "JPEG")
-		del draw
-		print('heightTriangle:'+str(heightTriangle))
-		return 1,heightTriangle,endW-startW
-
-def lenght(max,page,WoH):
-	width=len(page)
-	height=len(page[0])
-	if WoH==1:
-		return float(float(21)*float(max)/float(width))
-	else:
-		return float(float(29.7)*float(max)/float(height))
-
-
-def lenghtTr(page,WoH,heig,osn):
-	width=len(page)
-	height=len(page[0])
-	if WoH==1:
-		osnl=float(float(21)*float(osn)/float(width))
-		heigl=float(float(29.7)*float(heig)/float(height))
-		rebr=math.sqrt((osnl/2)**2+heigl**2)
-		return osnl+2*rebr
-	else:
-		return float(float(29.7)*float(max)/float(height))
+def cut_Photo(mat):
+    step_width=len(mat)/5
+    step_height=len(mat[0])/5
+    aver0=0
+    #print( len(mat) , len(mat[0]))
+    for i in range(4):
+        for j in range (len(mat[0])):
+            if mat[(i+1)*step_width][j]==1:
+                aver0+=j
+                break
+    #print(aver0/4)
+    aver1=0
+    for i in range(4):
+        for j in range (len(mat[0])):
+            if mat[(i+1)*step_width][len(mat[0])-1-j]==1:
+                aver1+=len(mat[0])-1-j
+                break
+    height=(aver1-aver0)/4
+    #print(aver1/4)
+    aver2=0
+    for i in range(4):
+        for j in range (len(mat)):
+            if mat[j][(i+1)*step_height]==1:
+                aver2+=j
+                break
+    #print(aver2/4)
+    aver3=0
+    for i in range(4):
+        for j in range (len(mat)):
+            if mat[len(mat)-j-2][(i+1)*step_height]==1:
+                aver3+=len(mat)-1-j
+                break
+    #print('errr:'+str(aver3/4))
+    width=(aver3-aver2)/4
+    #print(height  , width)
 
 
 
+    a=0
+    ma=[[0] * height for i in range(width)]
+    for i in range(aver2/4, aver3/4-1):
+        b=0
+        for j in range(aver0/4,aver1/4-1):
+            if mat[i][j]==1:
+                ma[a][b]=1
+            else:
+                ma[a][b]=0
+            b+=1
+        a+=1
 
+
+
+    cut=Image.new('L',(width,height))
+    draw = ImageDraw.Draw(cut)
+    for i in range(len(ma)):
+        for j in range(len(ma[0])):
+            if ma[i][j]==1 and i>5 and j>5 and i<(len(ma)-5) and j<(len(ma[0])-5):
+                ma[i][j]=1
+                draw.point((i, j), 0)
+            else:
+                ma[i][j]=0
+                draw.point((i ,j), 255)
+
+    cut.save("cut.jpg", "JPEG")
+    del draw
+                
+
+    
+    return ma
+    
+    
+                
+
+def line_H(ma):
+    width=len(ma)
+    height=len(ma[0])
+    print(width, height)
+    poz_line=0
+    for i in range(width):
+        if ma[i][len(ma[0])/2]==1:
+            poz_line=i
+            break
+    #print('sdsdsd'+str(poz_line))
+    maximal=0
+    for i in range(poz_line-5,poz_line+5):
+        count=0
+        for j in range(height):
+            if ma[i][j]==1 or ma[i+1][j]==1 or ma[i-1][j]==1 :
+                #print( i,j)
+                count +=1
+        if maximal<count:
+            maximal=count
+           # print(maximal)
+        
+
+    print(float(maximal)/float(height)*21.0)
+
+
+def line_W(ma):
+    width=len(ma)
+    height=len(ma[0])
+    print(width, height)
+    poz_line=0
+    for i in range(height):
+        if ma[len(ma)/2][i]==1:
+            poz_line=i
+            break
+    #print('sdsdsd'+str(poz_line))
+    maximal=0
+    for i in range(poz_line-5,poz_line+5):
+        count=0
+        for j in range(width):
+            if ma[j][i]==1 or ma[j+1][i]==1 or ma[j-1][i]==1 :
+                #print( i,j)
+                count +=1
+        if maximal<count:
+            maximal=count
+           # print(maximal)
+        
+
+    print(float(maximal)/float(height)*29.7)
+            
+        
+    
+                       
+            
+        
 
 #takePhoto()
 mat=editPhoto()
-tli,tlj=findLeftTop(mat)
-tri,trj=findRightTop(mat)
-bli,blj=findBottomLeft(mat)
-bri,brj=findBottomRight(mat)
 
-eror,index=readPoint(tli,tlj,tri,trj,bli,blj,bri,brj)
+                      
+ma=cut_Photo(mat)
+f = open('out.txt', 'wt')
+for i in range(1,len(ma)):
+    for j in range(1,len(ma[0])):
+        if ma[i][j]==1:
+            f.write('*')
+        else:
+            f.write(' ')
+    f.write('\n')
+f.flush()
+f.close()
+line_W(ma)
 
-if eror==1:
-	tli=index
-elif eror==2:
-	tri=index
-elif eror==3:
-	bri=index
-elif eror==4:
-	bli=index
-elif eror==5:
-	tlj=index
-elif eror==6:
-	blj=index
-elif eror==7:
-	trj=index
-elif eror==8:
-	brj=index
-
-print(str(tli)+'   '+str(tlj))
-print(str(tri)+'   '+str(trj))
-print(str(bli)+'   '+str(blj))
-print(str(bri)+'   '+str(brj))
-print(tli-tri)						
-print(trj-brj)
-st=(tlj+trj)/2
-sl=(bli+tli)/2
-sb=(brj+blj)/2
-sr=(bri+tri)/2
-print('st:  '+str(st)+'   sl:'+str(sl)+'   sb:'+str(sb)+'   sr:'+str(sr))
-
-
-
-page=cutPhoto(mat,st,sl,sb,sr)
-#printMat(page)
-
-#WoH,max=findLine(page)
-
-#print(lenght(max,page,WoH))
-WoHT,trhei,osnov=findTriangle(page)
-lenghtTr(page,WoHT,trhei,osnov)
 
