@@ -59,7 +59,7 @@ def extract_line_corners(thresh):
         # approximate the contour
         x, y, w, h = cv2.boundingRect(c)
 
-        epsilon = min(h, w) * 0.5
+        epsilon = max(h, w) * 0.5
         approx = cv2.approxPolyDP(c, epsilon, True)
 
         if len(approx) != 2:
@@ -90,18 +90,26 @@ def extract_triangle_corners(thresh):
         return result
 
 
-def line_length (vertices):
-    return math.sqrt((vertices[0][0] - vertices[1][0]) ** 2 + (vertices[0][1] - vertices[1][1]) ** 2)
+def line_length (vertices, paper):
+    a4_height = 29.7
+    a4_width = 21.0
+    height_pixels = math.fabs((paper[0][1] + paper[3][1]) / 2.0 - (paper[1][1] + paper[2][1]) / 2.0)
+    width_pixels = math.fabs((paper[0][0] + paper[1][0]) / 2.0 - (paper[2][0] + paper[3][0]) / 2.0)
+    h_scale = a4_height / height_pixels
+    w_scale = a4_width / width_pixels
+
+    print('h_pixels = {} w_pixels = {} h_scale = {} w_scale = {}'.format(height_pixels, width_pixels, h_scale, w_scale))
+    return math.sqrt(((vertices[0][0] - vertices[1][0]) * w_scale) ** 2 + ((vertices[0][1] - vertices[1][1]) * h_scale) ** 2)
 
 
-def triangle_perimeter (vertices):
-    return line_length(vertices[0:2]) + line_length(vertices[1:3]) + line_length([vertices[0], vertices[2]])
+def triangle_perimeter (vertices, paper):
+    return line_length(vertices[0:2], paper) + line_length(vertices[1:3], paper) + line_length([vertices[0], vertices[2]], paper)
 
 
-def triangle_area (vertices):
-    a = line_length(vertices[0:2])
-    b = line_length(vertices[1:3])
-    c = line_length([vertices[0], vertices[2]])
+def triangle_area (vertices, paper):
+    a = line_length(vertices[0:2], paper)
+    b = line_length(vertices[1:3], paper)
+    c = line_length([vertices[0], vertices[2]], paper)
     p = (a + b + c) / 2
     return math.sqrt(p * (p - a) * (p - b) * (p - c))
 
@@ -114,7 +122,7 @@ def get_binary_image(img, threshold = 127):
 
 
 # takePhoto()
-img = cv2.imread('triangle.jpg', 0)
+img = cv2.imread('capture.jpg', 0)
 thresh = get_binary_image(img)
 save (thresh, "binary1.jpg")
 
@@ -125,12 +133,15 @@ print('Line = {}'.format(line_vertices))
 triangle_vertices = extract_triangle_corners(thresh)
 print('triangle = {}'.format(triangle_vertices))
 
-# img = cv2.imread('capture.jpg', 0)
+print('Line length = {}'.format(line_length(line_vertices, paper_vertices)))
+
+# image, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+# img = cv2.imread('triangle.jpg', 0)
 # i=0
 # save(img, "result0.jpg")
-
+#
 # for c in contours:
 #     i += 1
-#     cv2.drawContours(img, [c], 0, (0, 255, 0), 3)
+#     cv2.drawContours(img, [c], 0, (255, 255, 255), 3)
 #     image_binary = Image.fromarray(img)
 #     image_binary.save("result{}.jpg".format(i), "JPEG")
