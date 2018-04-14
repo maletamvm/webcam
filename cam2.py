@@ -5,7 +5,7 @@ import math
 
 
 def takePhoto():
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
 
     while (True):
         # Capture frame-by-frame
@@ -121,7 +121,7 @@ def get_binary_image(img, threshold = 127):
     return thresh
 
 
-# takePhoto()
+takePhoto()
 img = cv2.imread('capture.jpg', 0)
 thresh = get_binary_image(img)
 save (thresh, "binary1.jpg")
