@@ -3,12 +3,14 @@ import time
 from tkinter import *
 import cv2
 from PIL import Image, ImageTk
+import cam2
 
 
 class Window:
     # Define settings upon initialization. Here you can specify
     def __init__(self, master=None):
 
+        self.calculator = cam2.Calculator()
         # root window created. Here, that would be the only window, but
         # you can later have windows within windows.
         self.root = Tk()
@@ -86,7 +88,9 @@ class Window:
             print("[INFO] caught a RuntimeError")
 
     def takeSnapshot(self):
-        cv2.imwrite('capture.jpg', self.gray)
+        # cv2.imwrite('capture.jpg', self.gray)
+        # self.calculator.gray = self.gray
+        self.calculator.calculate()
 
 
 
