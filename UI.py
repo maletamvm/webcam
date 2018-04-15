@@ -41,7 +41,7 @@ class Window:
         # create a button, that when pressed, will take the current
         # frame and save it to file
         btn = Button(self.root, text="Snapshot!",
-                         command=self.takeSnapshot)
+                     command=self.takeSnapshot)
         btn.pack(side="bottom", fill="both", expand="yes", padx=10,
                  pady=10)
 
@@ -91,7 +91,6 @@ class Window:
         # cv2.imwrite('capture.jpg', self.gray)
         # self.calculator.gray = self.gray
         self.calculator.calculate()
-
 
 
 # creation of an instance

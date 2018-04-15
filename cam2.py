@@ -7,6 +7,7 @@ class Calculator:
     def __init__(self, gray=None):
         self.gray = gray
         self.binary = None
+        self.paper = None
         self.paper_vertices = None
         self.line_vertices = None
         self.triangle_vertices = None
@@ -34,7 +35,16 @@ class Calculator:
         for outer in vertices:
             result.append(tuple(outer[0]))
         self.paper_vertices = result
-        return result
+
+        #crop
+        # max_x = max(self.paper_vertices[0][0], self.paper_vertices[1][0])
+        # max_y = max(self.paper_vertices[0][1], self.paper_vertices[3][1])
+        # min_w = int(min(math.fabs(max_x - self.paper_vertices[3][0]),
+        #                 math.fabs(max_x - self.paper_vertices[2][0])))
+        # min_h = int(min(math.fabs(max_y - self.paper_vertices[1][1]),
+        #                 math.fabs(max_y - self.paper_vertices[2][1])))
+        #
+        # self.paper = self.binary[max_y +1 :max_y+min_h - 1, max_x + 1:max_x+min_w - 1]
 
     def extract_line_corners(self):
         image, contours, hierarchy = cv2.findContours(self.binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -52,7 +62,7 @@ class Calculator:
             result = []
             for outer in vertices:
                 result.append(tuple(outer[0]))
-            return result
+            self.line_vertices = result
 
     def extract_triangle_corners(self):
         image, contours, hierarchy = cv2.findContours(self.binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -70,7 +80,7 @@ class Calculator:
             result = []
             for outer in vertices:
                 result.append(tuple(outer[0]))
-            return result
+            self.triangle_vertices = result
 
     def line_length(self, vertices):
         a4_height = 29.7
@@ -116,3 +126,9 @@ class Calculator:
         print('[INFO] Line = {}'.format(self.line_vertices))
         self.extract_triangle_corners()
         print('[INFO] triangle = {}'.format(self.triangle_vertices))
+
+
+def save(thresh, name):
+    image = Image.fromarray(thresh)
+    image.save(name)
+
