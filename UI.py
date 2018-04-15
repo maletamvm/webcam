@@ -5,13 +5,14 @@ import cv2
 from PIL import Image, ImageTk
 
 
-# Here, we are creating our class, Window, and inheriting from the Frame
-# class. Frame is a class from the tkinter module. (see Lib/tkinter/__init__)
-class Window(Frame):
+class Window:
     # Define settings upon initialization. Here you can specify
     def __init__(self, master=None):
-        # parameters that you want to send through the Frame class.
-        Frame.__init__(self, master)
+
+        # root window created. Here, that would be the only window, but
+        # you can later have windows within windows.
+        self.root = Tk()
+        self.root.geometry("640x500")
 
         # reference to the master widget, which is the tk window
         self.master = master
@@ -27,19 +28,17 @@ class Window(Frame):
     # Creation of init_window
     def init_window(self):
         # changing the title of our master widget
-        self.master.title("GUI")
+        self.root.title("GUI")
 
         # allowing the widget to take the full space of the root window
-        self.pack(fill=BOTH, expand=1)
+        # self.root.pack(fill=BOTH, expand=1)
 
-        # creating a button instance
-        quitButton = Button(self, text="Exit", command=self.client_exit)
-        # placing the button on my window
-        quitButton.pack(side="right", padx=10, pady=10)
+        # self.destructor function gets fired when the window is closed
+        self.root.protocol('WM_DELETE_WINDOW', self.destructor)
 
         # create a button, that when pressed, will take the current
         # frame and save it to file
-        btn = Button(self, text="Snapshot!",
+        btn = Button(self.root, text="Snapshot!",
                          command=self.takeSnapshot)
         btn.pack(side="bottom", fill="both", expand="yes", padx=10,
                  pady=10)
@@ -50,9 +49,12 @@ class Window(Frame):
         self.thread = threading.Thread(target=self.videoLoop, args=())
         self.thread.start()
 
-    def client_exit(self):
+    def destructor(self):
+        """ Destroy the root object and release all resources """
+        print("[INFO] closing...")
+        self.root.destroy()
         self.stopEvent.set()
-        exit()
+        cv2.destroyAllWindows()  # it is not mandatory in this application
 
     def videoLoop(self):
         cap = cv2.VideoCapture(0)
@@ -86,13 +88,10 @@ class Window(Frame):
     def takeSnapshot(self):
         cv2.imwrite('capture.jpg', self.gray)
 
-# root window created. Here, that would be the only window, but
-# you can later have windows within windows.
-root = Tk()
-root.geometry("1000x500")
+
 
 # creation of an instance
-app = Window(root)
+app = Window()
 
 # mainloop
-root.mainloop()
+app.root.mainloop()

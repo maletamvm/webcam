@@ -121,19 +121,19 @@ def get_binary_image(img, threshold = 127):
     return thresh
 
 
-takePhoto()
+# takePhoto()
 img = cv2.imread('capture.jpg', 0)
 thresh = get_binary_image(img)
 save (thresh, "binary1.jpg")
-
-paper_vertices = extract_paper_corners(thresh)
-print('paper = {}'.format(paper_vertices))
-line_vertices = extract_line_corners(thresh)
-print('Line = {}'.format(line_vertices))
-triangle_vertices = extract_triangle_corners(thresh)
-print('triangle = {}'.format(triangle_vertices))
-
-print('Line length = {}'.format(line_length(line_vertices, paper_vertices)))
+#
+# paper_vertices = extract_paper_corners(thresh)
+# print('paper = {}'.format(paper_vertices))
+# line_vertices = extract_line_corners(thresh)
+# print('Line = {}'.format(line_vertices))
+# triangle_vertices = extract_triangle_corners(thresh)
+# print('triangle = {}'.format(triangle_vertices))
+#
+# print('Line length = {}'.format(line_length(line_vertices, paper_vertices)))
 
 # image, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 # img = cv2.imread('triangle.jpg', 0)
