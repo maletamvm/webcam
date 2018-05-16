@@ -8,36 +8,12 @@ from PIL import Image, ImageDraw
 def toFixed(numObj, digits=0):
     return f"{numObj:.{digits}f}"
 
-def takePhoto():
-    cap = cv2.VideoCapture(1)
-
-    while(True):
-        ret, frame = cap.read()
-
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-        cv2.imshow('frame',gray)
-        if cv2.waitKey(1) & 0xFF == ord('e'):
-            gray=cv2.GaussianBlur(gray,(3,3),0)
-            cv2.imwrite('capture1.jpg',gray)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    cap.release()
-    cv2.destroyAllWindows()
-
-
-
-
-
-
-
 
 
 
 
 def editPhoto():
-    image = Image.open("capture1.jpg")
+    image = Image.open("capture.jpg")
     
     width = image.size[0] 
     height = image.size[1]
@@ -187,20 +163,14 @@ def cut_Photo(mat):
     
                 
 
-def line_H(ma):
+def LH(ma):
     width=len(ma)
     height=len(ma[0])
     print(width, height)
-    poz_line=0
-    for i in range(width):
-        if ma[i][int(len(ma[0])/2)]==1:
-            poz_line=i
-            break
-    #print('sdsdsd'+str(poz_line))
     maximal=0
-    for i in range(poz_line-5,poz_line+5):
+    for i in range(width-1):
         count=0
-        for j in range(height):
+        for j in range(height-1):
             if ma[i][j]==1 or ma[i+1][j]==1 or ma[i-1][j]==1 :
                 #print( i,j)
                 count +=1
@@ -210,22 +180,18 @@ def line_H(ma):
         
 
     print(float(maximal)/float(height)*21.0)
+    res=float(maximal)/float(height)*21.0
+    return toFixed(res,2)
 
 
-def line_W(ma):
+def LW(ma):
     width=len(ma)-1
     height=len(ma[0])
     print(width, height)
-    poz_line=0
-    for i in range(height):
-        if ma[int(len(ma)/2)][i]==1:
-            poz_line=i
-            break
-    #print('sdsdsd'+str(poz_line))
     maximal=0
-    for i in range(poz_line-5,poz_line+5):
+    for i in range(height-1):
         count=0
-        for j in range(width):
+        for j in range(width-1):
             if ma[j][i]==1 or ma[j+1][i]==1 or ma[j-1][i]==1 :
                 #print( i,j)
                 count +=1
@@ -234,7 +200,10 @@ def line_W(ma):
            # print(maximal)
         
 
-    print(float(maximal)/float(height)*29.7)
+    print(maximal)
+    res=float(maximal)/float(width)*29.7
+    return toFixed(res,2)
+    
             
         
 def TRW(ma):
@@ -250,14 +219,14 @@ def TRW(ma):
     midl=0
 
     
-    for i in range(height):
+    for i in range(height-1):
         count=0
         poz_count=i
         count_line_start=0
         count_line_end=0
         swith=0
-        for j in range( width):
-            if ma[j][i]==1:
+        for j in range( width-1):
+            if ma[j][i]==1 or ma[j-1][i+1]==1 or ma[j-1][i+1]==1:
                 if swith==0:
                     count_line_start=j
                     swith=1
@@ -285,6 +254,7 @@ def TRW(ma):
                 break
         if poz_height!=0:
             break
+    print(width, height)
     print(poz_height,poz_maxi)
     len_height=float(poz_maxi-poz_height)/float(width)*29.7
     osn=float(maxi)/float(width)*29.7
@@ -311,14 +281,14 @@ def TRH(ma):
     midl=0
 
     
-    for i in range(width):
+    for i in range(width-1):
         count=0
         poz_count=i
         count_line_start=0
         count_line_end=0
         swith=0
-        for j in range( height):
-            if ma[i][j]==1:
+        for j in range( height-1):
+            if ma[i][j]==1 or ma[i+1][j+1]==1 or ma[i+1][j-1]==1:
                 if swith==0:
                     count_line_start=j
                     swith=1
@@ -330,9 +300,7 @@ def TRH(ma):
             line_start= count_line_start
             line_end=count_line_end
             midl=int((line_start+line_end)/2)
-            print('poz')
             print(line_start,line_end)
-            print('max')
             print(maxi,poz_maxi)
 
 
@@ -347,7 +315,9 @@ def TRH(ma):
         if poz_height!=0:
             break
     print(poz_height,poz_maxi)
-    len_height=float(poz_maxi-poz_height)/float(height)*21.0
+    print(width, height)
+    print(maxi)
+    len_height=float(poz_maxi-poz_height)/float(width)*29.7
     osn=float(maxi)/float(height)*21.0
     print(osn,len_height)
     P=((len_height**2+(osn/2)**2)**(1/2))*2+osn
@@ -355,15 +325,14 @@ def TRH(ma):
         
 
     print(float(maxi)/float(height)*21.0)
+    return toFixed(P,2)
     
                        
             
 def doe():
-    #takePhoto()
     mat=editPhoto()                     
     ma=cut_Photo(mat)
     return ma
 
 
-ma=doe()
-TRW(ma)
+

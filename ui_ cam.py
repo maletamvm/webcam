@@ -74,7 +74,7 @@ class Window:
         cv2.destroyAllWindows()  # it is not mandatory in this application
 
     def videoLoop(self):
-        cap = cv2.VideoCapture(0)
+        cap = cv2.VideoCapture(1)
         try:
             # keep looping over frames until we are instructed to stop
             while not self.stopEvent.is_set():
@@ -106,8 +106,8 @@ class Window:
         cap = cv2.VideoCapture(1)
         ret, frame = cap.read()
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        gray = cv2.GaussianBlur(gray, (5, 5), 0)
         cv2.imwrite('capture.jpg', gray)
-        # self.calculator.gray = self.gray
         ma=cam_new.doe()
         res=cam_new.TRW(ma)
         EntryC.insert(0,'Результат:'+str(res) )
@@ -115,27 +115,32 @@ class Window:
         cap = cv2.VideoCapture(1)
         ret, frame = cap.read()
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        gray = cv2.GaussianBlur(gray, (5, 5), 0)
         cv2.imwrite('capture.jpg', gray)
-        # self.calculator.gray = self.gray
-        ma=cam.doe()
-        cam.TRH(ma)
+        ma=cam_new.doe()
+        res=cam_new.TRH(ma)
+        EntryC.insert(0,'Результат:'+str(res) )
     def LW(self):
         cap = cv2.VideoCapture(1)
         ret, frame = cap.read()
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        gray = cv2.GaussianBlur(gray, (5, 5), 0)
         cv2.imwrite('capture.jpg', gray)
-        # self.calculator.gray = self.gray
-        ma=cam.doe()
-        cam.line_W(ma)
+        ma=cam_new.doe()
+        res=cam_new.LW(ma)
+        EntryC.insert(0,'Результат:'+str(res) )
     def LH(self):
         cap = cv2.VideoCapture(1)
         ret, frame = cap.read()
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        gray = cv2.GaussianBlur(gray, (5, 5), 0)
         cv2.imwrite('capture.jpg', gray)
-        # self.calculator.gray = self.gray
-        ma=cam.doe()
-        cam.line_H(ma)
-        print('jhghv')
+        ma=cam_new.doe()
+        res=cam_new.LH(ma)
+        EntryC.insert(0,'Результат:'+str(res) )
+
+
+        
 # creation of an instance
 app = Window()
 
